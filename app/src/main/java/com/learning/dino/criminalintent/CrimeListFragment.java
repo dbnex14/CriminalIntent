@@ -46,10 +46,16 @@ public class CrimeListFragment extends ListFragment{
         Crime c = ((CrimeAdapter)getListAdapter()).getItem(position);
         Log.d(TAG, c.getTitle() + " was clicked");
 
-        //Start CriminalActivity
+        //Start CrimeActivity to show crime clicked on in list.  Pass id of crime to show.
         Intent i = new Intent(getActivity(), CrimeActivity.class);
         i.putExtra(CrimeFragment.EXTRA_CRIME_ID, c.getId());
         startActivity(i);
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        ((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
     }
 
     //Custom adapter subclass
