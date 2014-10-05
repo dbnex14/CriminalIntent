@@ -7,7 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +40,12 @@ public class CrimeFragment extends Fragment {
     //constant for the request code to make CrimeFragment the target fragment of DatePickerFragment
     private static final int REQUEST_DATE = 0;
 
+    //constant for the request code to make CrimeFragment the target fragment of TimePickerFragment
+    private static final int REQUEST_TIME = 1;
+
+    //constant for the request code to make CrimeFragment the target fragment of ChoiceDialogFragment
+    private static final int REQUEST_CHOICE = 2;
+
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
@@ -55,8 +61,8 @@ public class CrimeFragment extends Fragment {
     }
 
     private void updateDate(){
-        mDateButton.setText(DateFormat.format("cccc MMM dd, yyyy", mCrime.getDate()));
-        //mDateButton.setText(mCrime.getDate().toString());
+        //mDateButton.setText(DateFormat.format("cccc MMM dd, yyyy", mCrime.getDate()));
+        mDateButton.setText(mCrime.getDateString());
     }
 
     @Override
@@ -98,10 +104,24 @@ public class CrimeFragment extends Fragment {
         mDateButton.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
                 FragmentManager fm = getActivity().getSupportFragmentManager();
-                //DatePickerFragment dialog = new DatePickerFragment();
-                DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
-                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
-                dialog.show(fm, DIALOG_DATE);
+
+                //Show DatePickerFragment
+                ////DatePickerFragment dialog = new DatePickerFragment();
+                //DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
+                //dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE); //Make CrimeFragment the target fragment of DatePickerFragment
+                //dialog.show(fm, DIALOG_DATE);
+
+                //Show TimePickerFragment
+                ////TimePickerFragment dialog = new TimePickerFragment();
+                //TimePickerFragment dialog = TimePickerFragment.newInstance(mCrime.getDate());
+                //dialog.setTargetFragment(CrimeFragment.this, REQUEST_TIME); //Make CrimeFragment the target fragment of TimePickerFragment
+                //dialog.show(fm, DIALOG_TIME);
+
+                //Show ChoiceDialogFragment
+                ChoiceDialogFragment dialog = new ChoiceDialogFragment();
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_CHOICE);
+                dialog.show(fm, null);
+
             }
         });
 
@@ -126,6 +146,33 @@ public class CrimeFragment extends Fragment {
             Date date = (Date)data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
             updateDate();
+        }
+
+        if (requestCode == REQUEST_TIME){
+            Date date = (Date)data.getSerializableExtra(TimePickerFragment.EXTRA_DATETIME);
+            mCrime.setDate(date);
+            updateDate();
+        }
+
+        if (requestCode == REQUEST_CHOICE){
+            int choice = data.getIntExtra(ChoiceDialogFragment.EXTRA_CHOICE, 0);
+
+            if (choice == 0){
+                Log.d("ChoiceDialog", "required choice returned nothing");
+                return;
+            }
+
+            if (choice == ChoiceDialogFragment.CHOICE_TIME){
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                TimePickerFragment dialog = TimePickerFragment.newInstance(mCrime.getDate());
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_TIME); //Make CrimeFragment the target fragment of TimePickerFragment
+                dialog.show(fm, DIALOG_TIME);
+            }else if (choice == ChoiceDialogFragment.CHOICE_DATE){
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE); //Make CrimeFragment the target fragment of DatePickerFragment
+                dialog.show(fm, DIALOG_DATE);
+            }
         }
     }
 }

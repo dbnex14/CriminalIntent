@@ -23,11 +23,17 @@ public class DatePickerFragment extends DialogFragment {
 
     private Date mDate;
 
+    //Private method that creates an intent, puts the data on it as an extra, and calls
+    //CrimeFragment.onActivityResult.
     private void sendResult(int resultCode){
         if (getTargetFragment() == null){
             return;
         }
 
+        //When dealing with 2 fragments hosted by the same activity, you can use Fragment.onActivytResult()
+        //and call it directly on target fragment to pass data (intent) back.
+        //When dealing with activities, you do not call Activity.onActivityResult directly yourself.  That
+        //is the job of ActivityManager.
         Intent i = new Intent();
         i.putExtra(EXTRA_DATE, mDate);
         getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, i);
@@ -71,6 +77,8 @@ public class DatePickerFragment extends DialogFragment {
                 .setView(v)
                 .setTitle(R.string.date_picker_title)
                 //.setPositiveButton(android.R.string.ok, null)
+                //We implement DialogInterface.OnClickListener here to call our private method
+                //sendResult() which creates intent and sends it to CrimeFragment.onActivityResult.
                 .setPositiveButton(
                         android.R.string.ok,
                         new DialogInterface.OnClickListener() {
