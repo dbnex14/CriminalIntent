@@ -14,4 +14,15 @@
     <string name="dialog_editTime">Time</string>
     <string name="dialog_editDateOrTime">Do you want to edit date or time?</string>
 
+    <string name="new_crime">New Crime</string>
+    <string name="show_subtitle">Show Subtitle</string>
+    <string name="hide_subtitle">Hide Subtitle</string>
+    <string name="subtitle">List of recorded crimes</string>
+    <string name="delete_crime">Delete</string>
+
+    <!-- chanllange portion -->
+    <string name="empty_text_view">There are no recorded crimes so far.\n
+        Hit + or Add Crimes button to add first recorded crime.</string>
+    <string name="empty_button_text">Add Crime</string>
+
 </resources>

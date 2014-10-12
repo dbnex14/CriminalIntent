@@ -1,14 +1,18 @@
 package com.learning.dino.criminalintent;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -68,16 +72,27 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         //mCrime = new Crime();
 
         //UUID crimeId = (UUID)getActivity().getIntent().getSerializableExtra(EXTRA_CRIME_ID);
         UUID crimeId = (UUID)getArguments().getSerializable(EXTRA_CRIME_ID);
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
+
+        //this tells FragmentManager that CrimeFragment will be implementing options
+        //menu callbacks on behalf of the activity
     }
 
+    @TargetApi(11) //annotate method to wave of Lint since app icon is available from API 11 only
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.fragment_crime, parent, false);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+            if (NavUtils.getParentActivityName(getActivity()) != null){
+                getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+            }
+        }
 
         mTitleField = (EditText)v.findViewById(R.id.crime_title);
         mTitleField.setText(mCrime.getTitle());
@@ -173,6 +188,19 @@ public class CrimeFragment extends Fragment {
                 dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE); //Make CrimeFragment the target fragment of DatePickerFragment
                 dialog.show(fm, DIALOG_DATE);
             }
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch (item.getItemId()){
+            case android.R.id.home:
+                if (NavUtils.getParentActivityName(getActivity()) != null){
+                    NavUtils.navigateUpFromSameTask(getActivity());
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 }

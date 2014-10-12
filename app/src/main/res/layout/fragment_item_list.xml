@@ -5,15 +5,39 @@
     android:layout_height="match_parent"
     tools:context="com.learning.dino.criminalintent.CrimeListFragment">
 
+    <!--ListView with id 'android:id/list' and a TextView with id 'android:id/empty' allows automatic
+        switching feature of ListView, that is, if it is empty, show your TextView identified by
+        'android:id/empty'; otherwise, show the list identified by 'android:id/list'.
+        This is simpler than creating s separate view for an 'empty view' and showing it. -->
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <TextView
+    <LinearLayout
         android:id="@android:id/empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center" />
+        android:layout_gravity="center"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/emptyTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="48dp"
+            android:paddingBottom="32dp"
+            android:text="@string/empty_text_view" />
+
+        <Button
+            android:id="@+id/initialCrimeButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="48dp"
+            android:layout_marginLeft="48dp"
+            android:text="@string/empty_button_text" />
+
+    </LinearLayout>
 
 </FrameLayout>
