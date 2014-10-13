@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:com.learning.dino.criminalintent="http://schemas.android.com/apk/res-auto" >
     <item android:id="@+id/menu_item_new_crime"
         android:icon="@android:drawable/ic_menu_add"
         android:title="@string/new_crime"
-        android:showAsAction="ifRoom|withText" >
+        com.learning.dino.criminalintent:showAsAction="ifRoom|withText" >
     </item>
 </menu>
 
