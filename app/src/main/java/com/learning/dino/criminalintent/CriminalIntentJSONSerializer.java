@@ -1,7 +1,6 @@
 package com.learning.dino.criminalintent;
 
 import android.content.Context;
-import android.os.Environment;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -9,10 +8,7 @@ import org.json.JSONException;
 import org.json.JSONTokener;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,10 +36,12 @@ public class CriminalIntentJSONSerializer {
         ArrayList<Crime> crimes = new ArrayList<Crime>();
 
         //Check if SD card is mounted
-        Boolean isSDPresent = android.os.Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
-        File sdCrimeFile = new File(mContext.getExternalFilesDir(null), mFilename);
+        //Boolean isSDPresent = android.os.Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+        //File sdCrimeFile = new File(mContext.getExternalFilesDir(null), mFilename);
         BufferedReader reader = null;
 
+        /*
+        * Logic to load file from SD card if present
         if (isSDPresent){ // && sdCrimeFile.exists()){
             Log.i(TAG, "SD card is mounted.  Loading from SD card file.");
             try{
@@ -72,7 +70,8 @@ public class CriminalIntentJSONSerializer {
                 }
             }
         } else{
-            Log.i(TAG, "SD card is not mounted.  Loading from private storage file.");
+        */
+            Log.i(TAG, "Loading from private storage file.");
             try{
                 //Open and read file
                 InputStream in = mContext.openFileInput(mFilename);
@@ -99,7 +98,7 @@ public class CriminalIntentJSONSerializer {
                     reader.close();
                 }
             }
-        }
+        //}
 
         return crimes;
     }
@@ -108,7 +107,7 @@ public class CriminalIntentJSONSerializer {
         throws JSONException, IOException {
 
         //Check if SD card is mounted
-        Boolean isSDPresent = android.os.Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+        //Boolean isSDPresent = android.os.Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
 
         //Build an array in JSON
         JSONArray array = new JSONArray();
@@ -135,6 +134,8 @@ public class CriminalIntentJSONSerializer {
                 .show();
         */
 
+        /*
+        * logic to save to SD card if present
         if (isSDPresent){
             File sdFile = new File(mContext.getExternalFilesDir(null), mFilename);
             Log.i(TAG, "SD card is mounted, saving crimes to SD card at: " + sdFile.toString());
@@ -155,7 +156,8 @@ public class CriminalIntentJSONSerializer {
                 }
             }
         } else {
-            Log.i(TAG, "No SD card found, saving crimes private application area.");
+        */
+            Log.i(TAG, "Saving crimes private application area.");
             for (Crime c: crimes){
                 array.put(c.toJSON());
             }
@@ -171,6 +173,6 @@ public class CriminalIntentJSONSerializer {
                     w.close();
                 }
             }
-        }
+        //}
     }
 }
