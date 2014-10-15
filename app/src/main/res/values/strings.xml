@@ -25,4 +25,6 @@
         Hit + or Add Crimes button to add first recorded crime.</string>
     <string name="empty_button_text">Add Crime</string>
 
+    <string name="take">Take!</string>
+
 </resources>
