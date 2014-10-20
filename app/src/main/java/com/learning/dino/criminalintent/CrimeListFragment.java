@@ -32,7 +32,7 @@ public class CrimeListFragment extends ListFragment{
     private static final String TAG = "CrimeListFragment";
     private ArrayList<Crime> mCrimes;
     private boolean mSubtitleVisible;
-    private Button mAddCrimeButton; //db*
+    private Button mAddCrimeButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -53,12 +53,11 @@ public class CrimeListFragment extends ListFragment{
         setListAdapter(adapter);
     }
 
-    //db*
     @TargetApi(11)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        //<db* - challange part>
-        //db* View v = super.onCreateView(inflater, parent, savedInstanceState);
+        //<challange part - BEGIN>
+        // View v = super.onCreateView(inflater, parent, savedInstanceState);
         View v = inflater.inflate(R.layout.fragment_item_list, parent, false);
 
         //Register list view of crimes for context menu.  android.R.id.list list resource Id is used
@@ -133,7 +132,7 @@ public class CrimeListFragment extends ListFragment{
                 startActivityForResult(i, 0);
             }
         });
-        //</db*>
+        //</challenge part - END>
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {

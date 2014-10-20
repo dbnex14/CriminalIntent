@@ -26,5 +26,6 @@
     <string name="empty_button_text">Add Crime</string>
 
     <string name="take">Take!</string>
+    <string name="delete_photo">Delete Crime Photo</string>
 
 </resources>

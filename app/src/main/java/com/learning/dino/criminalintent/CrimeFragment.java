@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,6 +13,7 @@ import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,7 +25,9 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
+import java.io.File;
 import java.util.Date;
 import java.util.UUID;
 
@@ -33,6 +37,8 @@ import java.util.UUID;
  *
  */
 public class CrimeFragment extends Fragment {
+
+    public static final String TAG = "CrimeFragment";
 
     //We define extra keys in activity that retrieves them and uses them. Also, extras are
     //interfaces to this activity (incoming and outgoing extras) so if this activity has to return
@@ -54,11 +60,18 @@ public class CrimeFragment extends Fragment {
     //constant for the request code to make CrimeFragment the target fragment of ChoiceDialogFragment
     private static final int REQUEST_CHOICE = 2;
 
+    //constant for the request code to get photo file name
+    private static final int REQUEST_PHOTO = 3;
+
+    //constant to id the ImageFragment in the FragmentManager
+    private static final String DIALOG_IMAGE = "image";
+
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
     private ImageButton mPhotoButton;
+    private ImageView mPhotoView;
 
     public static CrimeFragment newInstance(UUID crimeId){
         Bundle args = new Bundle();
@@ -72,6 +85,36 @@ public class CrimeFragment extends Fragment {
     private void updateDate(){
         //mDateButton.setText(DateFormat.format("cccc MMM dd, yyyy", mCrime.getDate()));
         mDateButton.setText(mCrime.getDateString());
+    }
+
+    private void showPhoto(){
+        //(Re)set image button's image based on our photo
+        Photo p = mCrime.getPhoto();
+        BitmapDrawable b = null;
+        if (p != null){
+            String path = getActivity().getFileStreamPath(p.getFilename()).getAbsolutePath();
+            b = PictureUtils.getScaledDrawable(getActivity(), path);
+
+            //CHALLANGE, Ch.20-Image Orientation
+            //db* if (p.getOrientation() == Configuration.ORIENTATION_PORTRAIT){
+            if (p.getOrientation() == CrimeCameraActivity.ORIENTATION_PORTRAIT_INVERTED ||
+                    p.getOrientation() == CrimeCameraActivity.ORIENTATION_PORTRAIT_NORMAL){ //db*
+                b = PictureUtils.getPortraitBitmapDrawable(mPhotoView, b);
+            }
+        }
+        mPhotoView.setImageDrawable(b);
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        showPhoto();
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+        PictureUtils.cleanImageView(mPhotoView);
     }
 
     @Override
@@ -159,7 +202,8 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onClick(View v){
                 Intent i = new Intent(getActivity(), CrimeCameraActivity.class);
-                startActivity(i);
+                //startActivity(i);
+                startActivityForResult(i, REQUEST_PHOTO);
             }
         });
 
@@ -171,6 +215,21 @@ public class CrimeFragment extends Fragment {
         if (!hasCamera){
             mPhotoButton.setEnabled(false);
         }
+
+        mPhotoView = (ImageView)v.findViewById(R.id.crime_imageView);
+        registerForContextMenu(mPhotoView);
+        mPhotoView.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v){
+                Photo p = mCrime.getPhoto();
+                if (p == null){
+                    return;
+                }
+
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                String path = getActivity().getFileStreamPath(p.getFilename()).getAbsolutePath();
+                ImageFragment.newInstance(path, p.getOrientation()).show(fm, DIALOG_IMAGE);
+            }
+        });
 
         return v;
     }
@@ -212,6 +271,29 @@ public class CrimeFragment extends Fragment {
                 dialog.show(fm, DIALOG_DATE);
             }
         }
+
+        if (requestCode == REQUEST_PHOTO){
+            //CHALLANGE, Ch.20-Image Orientation, 2nd part to delete photo
+            if (mCrime.getPhoto() != null){
+                String path = getActivity().getFileStreamPath(mCrime.getPhoto().getFilename()).getAbsolutePath();
+                File f = new File(path);
+                f.delete();
+                mCrime.setPhoto(null);
+                Log.i(TAG, "File " + path + " deleted.");
+            }
+
+            //Create a new Photo object and attach it to the crime
+            String filename = data.getStringExtra(CrimeCameraFragment.EXTRA_PHOTO_FILENAME);
+            int orientation = data.getIntExtra(CrimeCameraFragment.EXTRA_PHOTO_ORIENTATION, 0); //CHALLANGE Ch.20, Image Orientation
+            if (filename != null){
+                //Log.i(TAG, "filename: " + filename);
+                Photo p = new Photo(filename, orientation);
+                //Photo p = new Photo(filename);
+                mCrime.setPhoto(p);
+                showPhoto();
+                //Log.i(TAG, "Crime: " + mCrime.getTitle() + " has a photo");
+            }
+        }
     }
 
     @Override
@@ -235,7 +317,7 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.challenge_delete, menu); //db*
+        inflater.inflate(R.menu.challenge_delete, menu);
     }
 
     @Override
@@ -247,5 +329,26 @@ public class CrimeFragment extends Fragment {
         //} else {
             CrimeLab.get(getActivity()).saveCrimes();  //save crimes to crimes.json file
         //}
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo){
+        getActivity().getMenuInflater().inflate(R.menu.crime_photo_delete, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item){
+        switch(item.getItemId()){
+            case R.id.menu_delete_photo:
+                if (mCrime.getPhoto() != null){
+                    String path = getActivity().getFileStreamPath(mCrime.getPhoto().getFilename()).getAbsolutePath();
+                    File f = new File(path);
+                    f.delete();
+                    mCrime.setPhoto(null);
+                    mPhotoView.setImageDrawable(null);
+                }
+                return true;
+        }
+        return super.onContextItemSelected(item);
     }
 }
