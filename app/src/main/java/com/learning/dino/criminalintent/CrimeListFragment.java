@@ -1,6 +1,7 @@
 package com.learning.dino.criminalintent;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,6 +34,27 @@ public class CrimeListFragment extends ListFragment{
     private ArrayList<Crime> mCrimes;
     private boolean mSubtitleVisible;
     private Button mAddCrimeButton;
+
+    private Callbacks mCallbacks;
+
+    /**
+     * Required interface for hosting activities
+     */
+    public interface Callbacks{
+        void onCrimeSelected(Crime crime);
+    }
+
+    @Override
+    public void onAttach(Activity activity){
+        super.onAttach(activity);
+        mCallbacks = (Callbacks)activity;
+    }
+
+    @Override
+    public void onDetach(){
+        super.onDetach();
+        mCallbacks = null;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -148,15 +170,18 @@ public class CrimeListFragment extends ListFragment{
     public void onListItemClick(ListView l, View v, int position, long id){
         //we now use the custom adapter sublclass CrimeAdapter defined below
         //Crime c = (Crime)(getListAdapter().getItem(position));
-
-        Crime c = ((CrimeAdapter)getListAdapter()).getItem(position);
+        Crime c = ((CrimeAdapter)getListAdapter()).getItem(position); //get the crime from adapter
         Log.d(TAG, c.getTitle() + " was clicked");
 
         //Start CrimeActivity to show crime clicked on in list.  Pass id of crime to show.
         //Intent i = new Intent(getActivity(), CrimeActivity.class);
-        Intent i = new Intent(getActivity(), CrimePagerActivity.class);
-        i.putExtra(CrimeFragment.EXTRA_CRIME_ID, c.getId());
-        startActivity(i);
+        //Intent i = new Intent(getActivity(), CrimePagerActivity.class); //start an instance of CrimePagerActivity
+        //i.putExtra(CrimeFragment.EXTRA_CRIME_ID, c.getId());
+        //startActivity(i);
+
+        //call callbacks interface to delegate functionality back to activity so that
+        //hosting activity does fragment bossing duties and layout dependent behavior
+        mCallbacks.onCrimeSelected(c);
     }
 
     @Override
@@ -183,9 +208,14 @@ public class CrimeListFragment extends ListFragment{
             case R.id.menu_item_new_crime:
                 Crime crime = new Crime();
                 CrimeLab.get(getActivity()).addCrime(crime);
-                Intent i = new Intent(getActivity(), CrimePagerActivity.class);
-                i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId());
-                startActivityForResult(i, 0);
+                //Intent i = new Intent(getActivity(), CrimePagerActivity.class);
+                //i.putExtra(CrimeFragment.EXTRA_CRIME_ID, crime.getId());
+                //startActivityForResult(i, 0);
+                ((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
+
+                //call callbacks interface to delegate functionality back to activity so that
+                //hosting activity does fragment bossing duties and layout dependent behavior
+                mCallbacks.onCrimeSelected(crime);
                 return true;
             case R.id.menu_item_show_subtitle:
                 if (getActivity().getActionBar().getSubtitle() == null){
@@ -224,6 +254,10 @@ public class CrimeListFragment extends ListFragment{
         }
 
         return super.onContextItemSelected(item);
+    }
+
+    public void updateUI(){
+        ((CrimeAdapter)getListAdapter()).notifyDataSetChanged();
     }
 
     //Custom adapter subclass

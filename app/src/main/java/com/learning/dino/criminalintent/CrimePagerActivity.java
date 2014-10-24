@@ -15,10 +15,14 @@ import java.util.UUID;
  * It does not uses any layout from xml but definces it in code since the view hierarchy is very
  * simple, it has just a single view.
  */
-public class CrimePagerActivity extends FragmentActivity{
+public class CrimePagerActivity extends FragmentActivity
+    implements CrimeFragment.Callbacks {
 
     private ViewPager mViewPager;
     private ArrayList<Crime> mCrimes;
+
+    //Method required to be implemented from CrimeFragment.Callbacks
+    public void onCrimeUpdated(Crime crime){}
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
